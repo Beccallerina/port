@@ -163,11 +163,10 @@ def extract_the_data_you_are_interested_in_to_df(zip_file) -> pd.DataFrame:
  
                     # Transform JSON data into a DataFrame
                     df = json_data_to_dataframe(json_data)
-                    print(df)
  
                     # Clean the data using a nested function
                     out = clean_extracted_data(df)
-                    print(out)
+                    return out
 
             print("No JSON file found in the zip archive.")
  
