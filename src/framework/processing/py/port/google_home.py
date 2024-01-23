@@ -110,7 +110,8 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
     Try to clean, if fail return the orginal dataframe
     """
 
-    out = df
+    out = pd.DataFrame()
+    #if not working, return to out = df
 
     try:
         # Extract relevant columns
@@ -141,8 +142,7 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
  
 
 
-# I would suggest giving it a different more informative name
-def extract_the_data_you_are_interested_in_to_df(zip_file) -> pd.DataFrame:
+def extract_google_data_to_df(zip_file) -> pd.DataFrame:
     """
     Will return a cleaned dataframe. 
     If there is not data or it fails for whatever reason return an empty dataframe

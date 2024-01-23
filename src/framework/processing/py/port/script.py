@@ -185,7 +185,7 @@ def extract_google_home(zipfile: str, validation: validate.ValidateInput) -> lis
     """
     tables_to_render = []
 
-    df = google_home.extract_the_data_you_are_interested_in_to_df(zipfile)
+    df = google_home.extract_google_data_to_df(zipfile)
     if not df.empty:
         table_title = props.Translatable({"en": "Google Home", "nl": "Google Home"})
         table =  props.PropsUIPromptConsentFormTable("google_home_unique_key_here", table_title, df) 
