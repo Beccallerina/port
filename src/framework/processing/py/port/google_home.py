@@ -105,13 +105,14 @@ def json_data_to_dataframe(json_data) -> pd.DataFrame:
         return out
  
  
-def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
+def clean_extracted_data(pd.DataFrame) -> pd.DataFrame:
+    #if not working, return to (df: pd.DataFrame)
     """
     Try to clean, if fail return the orginal dataframe
     """
 
     out = pd.DataFrame()
-    #if not working, return to out = df
+    #if not working, return to: out = df
 
     try:
         # Extract relevant columns
