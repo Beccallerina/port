@@ -105,35 +105,33 @@ def json_data_to_dataframe(json_data) -> pd.DataFrame:
         return out
  
  
-def clean_extracted_data(pd.DataFrame) -> pd.DataFrame:
-    #if not working, return to (df: pd.DataFrame)
+def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Try to clean, if fail return the orginal dataframe
+    Try to clean, if fail return the original dataframe
     """
 
     out = pd.DataFrame()
-    #if not working, return to: out = df
 
     try:
         # Extract relevant columns
         selected_columns = ['title', 'time', 'subtitles']
         df_cleaned = df[selected_columns]
-     
+
         # Create 'command' and 'response' columns
         df_cleaned['command'] = df_cleaned['title'].astype(str)
         df_cleaned['response'] = df_cleaned['subtitles'].astype(str)
-     
+
         # Remove additional columns
         columns_to_remove2 = ['title', 'subtitles']
         df_to_donate = df_cleaned.drop(columns=columns_to_remove2)
-     
+
         # Convert 'time' to datetime
         df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
-     
+
         # Extract date and timestamp
         df_to_donate['date'] = df_to_donate['time_datetime'].dt.date
         df_to_donate['timestamp'] = df_to_donate['time_datetime'].dt.time
-     
+
         # Select and reorder columns
         out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
     except Exception as e:
