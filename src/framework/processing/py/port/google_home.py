@@ -92,11 +92,11 @@ def json_data_to_dataframe(json_data) -> pd.DataFrame:
         # Check if the loaded data is a list
         if isinstance(json_data, list):
             # Create a DataFrame from the list of objects
-            out = pd.DataFrame(json_data, dtype=str)
- 
+            out = pd.DataFrame(json_data)
+
         else:
             print("The JSON data is not a list.")
- 
+
     except json.JSONDecodeError as e:
         print(f"JSON decoding error: {e}")
     except Exception as e:
@@ -106,10 +106,6 @@ def json_data_to_dataframe(json_data) -> pd.DataFrame:
  
  
 def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Try to clean, if fail return the original dataframe
-    """
-
     out = pd.DataFrame()
 
     try:
@@ -141,7 +137,7 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
  
 
 
-def extract_google_data_to_df(zip_file) -> pd.DataFrame:
+def extract_googlehome_data_to_df(zip_file) -> pd.DataFrame:
     """
     Will return a cleaned dataframe. 
     If there is not data or it fails for whatever reason return an empty dataframe
