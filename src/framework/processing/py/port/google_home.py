@@ -4,17 +4,12 @@ DDP extract Google Home
 from pathlib import Path
 import logging
 import zipfile
-import re
-import io
 
 import zipfile
 import json
 from io import TextIOWrapper
 
 import pandas as pd
-
-import port.unzipddp as unzipddp
-import port.helpers as helpers
 
 from port.validate import (
     DDPCategory,
@@ -23,6 +18,7 @@ from port.validate import (
     ValidateInput,
     StatusCode,
 )
+import port.helpers as helpers
 
 logger = logging.getLogger(__name__)
 
@@ -104,9 +100,38 @@ def json_data_to_dataframe(json_data) -> pd.DataFrame:
     finally:
         return out
  
- 
+
+def is_nan(value):
+    if isinstance(value, float):
+        return value != value  # NaN is the only value that is not equal to itself
+    return False
+
+
+def clean_response(response_list: list) -> str:
+    """
+    Get the list from a response
+    Extract all values from the name key
+
+    """
+    responses = []
+    try:
+        if isinstance(response_list, list):
+            for d in response_list:
+                responses.append(d.get("name", ""))
+
+            out = " ".join(responses)
+           
+        if is_nan(response_list):
+            out = "no response"
+
+        return out
+
+    except Exception as e:
+        return str(response_list)
+        
+        
 def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
-    out = pd.DataFrame()
+    out = df
 
     try:
         # Extract relevant columns
@@ -115,21 +140,23 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
 
         # Create 'command' and 'response' columns
         df_cleaned['command'] = df_cleaned['title'].astype(str)
-        df_cleaned['response'] = df_cleaned['subtitles'].astype(str)
+        df_cleaned['response'] = df_cleaned['subtitles'].apply(clean_response)
 
         # Remove additional columns
         columns_to_remove2 = ['title', 'subtitles']
         df_to_donate = df_cleaned.drop(columns=columns_to_remove2, axis=1)
 
         # Convert 'time' to datetime
-        df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
+        # THIS IS THE CODE THAT IS CAUSING THE ERROR
+        #df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
 
         # Extract date and timestamp
-        df_to_donate['date'] = df_to_donate['time_datetime'].dt.date
-        df_to_donate['timestamp'] = df_to_donate['time_datetime'].dt.time
+        #df_to_donate['date'] = df_to_donate['time_datetime'].dt.date
+        #df_to_donate['timestamp'] = df_to_donate['time_datetime'].dt.time
 
         # Select and reorder columns
-        out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
+        #out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
+        out = df_to_donate[['time', 'command', 'response']]
     except Exception as e:
         print(e)
     finally:
@@ -161,6 +188,7 @@ def extract_googlehome_data_to_df(zip_file) -> pd.DataFrame:
  
                     # Clean the data using a nested function
                     out = clean_extracted_data(df)
+                    print(out)
                     return out
 
             print("No JSON file found in the zip archive.")
@@ -175,3 +203,4 @@ def extract_googlehome_data_to_df(zip_file) -> pd.DataFrame:
         print(f"An error occurred: {e}")
     finally:
         return out
+
