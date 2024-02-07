@@ -111,7 +111,7 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
     try:
         # Extract relevant columns
         selected_columns = ['title', 'time', 'subtitles']
-        df_cleaned = df[selected_columns]
+        df_cleaned = df.loc[:, selected_columns]
 
         # Create 'command' and 'response' columns
         df_cleaned['command'] = df_cleaned['title'].astype(str)
@@ -119,7 +119,7 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
 
         # Remove additional columns
         columns_to_remove2 = ['title', 'subtitles']
-        df_to_donate = df_cleaned.drop(columns=columns_to_remove2)
+        df_to_donate = df_cleaned.drop(columns=columns_to_remove2, axis=1)
 
         # Convert 'time' to datetime
         df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
@@ -134,7 +134,7 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
         print(e)
     finally:
         return out
- 
+    
 
 
 def extract_googlehome_data_to_df(zip_file) -> pd.DataFrame:
