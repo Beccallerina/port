@@ -92,19 +92,16 @@ def json_data_to_dataframe(json_data) -> pd.DataFrame:
         # Check if the loaded data is a list
         if isinstance(json_data, list):
             # Create a DataFrame from the list of objects
-            df = pd.DataFrame(json_data, dtype=str)
-
-            return df
+            out = pd.DataFrame(json_data)
 
         else:
             print("The JSON data is not a list.")
-            return None
 
     except json.JSONDecodeError as e:
         print(f"JSON decoding error: {e}")
-        return None
     except Exception as e:
         print(f"An error occurred: {e}")
+    finally:
         return out
  
  
