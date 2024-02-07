@@ -86,57 +86,65 @@ def validate(zfile: Path) -> ValidateInput:
 
 
 
-def json_data_to_dataframe(json_data):
+def json_data_to_dataframe(json_data) -> pd.DataFrame:
+    out = pd.DataFrame()
     try:
         # Check if the loaded data is a list
         if isinstance(json_data, list):
             # Create a DataFrame from the list of objects
-            df = pd.DataFrame(json_data, dtype=str)
-
-            return df
+            out = pd.DataFrame(json_data)
 
         else:
             print("The JSON data is not a list.")
-            return None
 
     except json.JSONDecodeError as e:
         print(f"JSON decoding error: {e}")
-        return None
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None
+    finally:
+        return out
+ 
+ 
+def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
+    out = pd.DataFrame()
 
+    try:
+        # Extract relevant columns
+        selected_columns = ['title', 'time', 'subtitles']
+        df_cleaned = df.loc[:, selected_columns]
 
-def clean_extracted_data(df):
-    # Convert to DataFrame
-    df_raw = pd.DataFrame(df)
+        # Create 'command' and 'response' columns
+        df_cleaned['command'] = df_cleaned['title'].astype(str)
+        df_cleaned['response'] = df_cleaned['subtitles'].astype(str)
 
-    # Extract relevant columns
-    selected_columns = ['title', 'time', 'subtitles']
-    df_cleaned = df.loc[:, selected_columns]
+        # Remove additional columns
+        columns_to_remove2 = ['title', 'subtitles']
+        df_to_donate = df_cleaned.drop(columns=columns_to_remove2, axis=1)
 
-    # Create 'command' and 'response' columns
-    df_cleaned['command'] = df_cleaned['title'].astype(str)
-    df_cleaned['response'] = df_cleaned['subtitles'].astype(str)
+        # Convert 'time' to datetime
+        df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
 
-    # Remove additional columns
-    columns_to_remove2 = ['title', 'subtitles']
-    df_to_donate = df_cleaned.drop(columns=columns_to_remove2, axis=1)
+        # Extract date and timestamp
+        df_to_donate['date'] = df_to_donate['time_datetime'].dt.date
+        df_to_donate['timestamp'] = df_to_donate['time_datetime'].dt.time
 
-    # Convert 'time' to datetime
-    df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
-
-    # Extract date and timestamp
-    df_to_donate['date'] = df_to_donate['time_datetime'].dt.date
-    df_to_donate['timestamp'] = df_to_donate['time_datetime'].dt.time
-
-    # Select and reorder columns
-    df_selected_to_donate = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
+        # Select and reorder columns
+        out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
+    except Exception as e:
+        print(e)
+    finally:
+        return out
     
-    return df_selected_to_donate
 
 
-def extract_googlehome_data_to_df(zip_file):
+def extract_googlehome_data_to_df(zip_file) -> pd.DataFrame:
+    """
+    Will return a cleaned dataframe. 
+    If there is not data or it fails for whatever reason return an empty dataframe
+    """
+
+    out = pd.DataFrame()
+
     try:
         with zipfile.ZipFile(zip_file, 'r') as zip_file:
             # Iterate through all files in the zip archive
@@ -147,27 +155,23 @@ def extract_googlehome_data_to_df(zip_file):
                     with zip_file.open(file_info.filename) as json_file:
                         # Load the JSON content
                         json_data = json.load(TextIOWrapper(json_file, 'utf-8'))
-
+ 
                     # Transform JSON data into a DataFrame
                     df = json_data_to_dataframe(json_data)
-
+ 
                     # Clean the data using a nested function
-                    cleaned_df = clean_extracted_data(df)
-
-                    return cleaned_df
+                    out = clean_extracted_data(df)
+                    return out
 
             print("No JSON file found in the zip archive.")
-            return None
-
+ 
     except FileNotFoundError:
         print(f"File not found: {zip_file}")
-        return None
     except zipfile.BadZipFile:
         print(f"Invalid zip file: {zip_file}")
-        return None
     except json.JSONDecodeError as e:
         print(f"JSON decoding error: {e}")
-        return None
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None
+    finally:
+        return out
