@@ -166,14 +166,13 @@ def create_chart(type: Literal["bar", "line", "area"],
 
 def create_wordcloud(nl_title: str, en_title: str, column: str, 
                      tokenize: bool = False, 
-                     value_column: Optional[str] = None, 
-                     extract: Optional[Literal["url_domain"]] = None):
+                     value_column: Optional[str] = None):
     return props.PropsUITextVisualization(title = props.Translatable({"en": en_title, "nl": nl_title}),
                                           type='wordcloud',
                                           text_column=column,
                                           value_column=value_column,
-                                          tokenize=tokenize,
-                                          extract=extract)
+                                          tokenize=tokenize
+                                          )
 
 
 ##################################################################
@@ -188,7 +187,10 @@ def extract_google_home(zipfile: str, validation: validate.ValidateInput) -> lis
     df = google_home.extract_googlehome_data_to_df(zipfile)
     if not df.empty:
         table_title = props.Translatable({"en": "Google Home", "nl": "Google Home"})
-        table =  props.PropsUIPromptConsentFormTable("google_home_unique_key_here", table_title, df) 
+        vis = [
+            create_wordcloud("command", "command", "command")
+        ]
+        table =  props.PropsUIPromptConsentFormTable("google_home_unique_key_here", table_title, df, visualizations=vis) 
         tables_to_render.append(table)
 
     return tables_to_render

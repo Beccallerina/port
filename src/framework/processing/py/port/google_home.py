@@ -49,7 +49,7 @@ STATUS_CODES = [
 
 def validate(zfile: Path) -> ValidateInput:
     """
-    Validates the input of an Youtube zipfile
+    Validates the input of an GoogleHome zipfile
 
     This function sets a validation object generated with ValidateInput
     This validation object can be read later on to infer possible problems with the zipfile
@@ -148,11 +148,12 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
 
         # Convert 'time' to datetime
         # THIS IS THE CODE THAT IS CAUSING THE ERROR
-        #df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], format='mixed')
+        #df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], errors='ignore')
 
         # Extract date and timestamp
-        #df_to_donate['date'] = df_to_donate['time_datetime'].dt.date
-        #df_to_donate['timestamp'] = df_to_donate['time_datetime'].dt.time
+        #df_to_donate['date'] = pd.to_datetime(df_to_donate['time_datetime'], unit='s').dt.date 
+        #df_to_donate['timestamp'] = pd.to_datetime(df_to_donate['time_datetime'], unit='s').dt.time
+       
 
         # Select and reorder columns
         #out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
