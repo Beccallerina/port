@@ -139,25 +139,32 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
         df_cleaned = df.loc[:, selected_columns]
 
         # Create 'command' and 'response' columns
-        df_cleaned['command'] = df_cleaned['title'].astype(str)
-        df_cleaned['response'] = df_cleaned['subtitles'].apply(clean_response)
+        df_cleaned['Uw commando'] = df_cleaned['title'].astype(str)
+        df_cleaned['Reactie van de assistent'] = df_cleaned['subtitles'].apply(clean_response)
 
         # Remove additional columns
         columns_to_remove2 = ['title', 'subtitles']
         df_to_donate = df_cleaned.drop(columns=columns_to_remove2, axis=1)
 
-        # Convert 'time' to datetime
-        # THIS IS THE CODE THAT IS CAUSING THE ERROR
+        # Remove last word in entries of the Commando column (ger: gesagt, en: said, nl: gezegd)
+        df_to_donate['Uw commando'] = df_to_donate['Uw commando'].str.rsplit(' ', 1).str[0]
+
+        # Convert time column THIS IS THE PROBLEMATIC CODE
+
+        # Option 1
+        #df_to_donate['Datum'] = pd.to_datetime(df_to_donate['time'], unit='s') --> this does not work
+        
+        # Option 2
         #df_to_donate['time_datetime'] = pd.to_datetime(df_to_donate['time'], errors='ignore')
 
         # Extract date and timestamp
-        #df_to_donate['date'] = pd.to_datetime(df_to_donate['time_datetime'], unit='s').dt.date 
+        #df_to_donate['Datum'] = pd.to_datetime(df_to_donate['time_datetime'], unit='s').dt.date 
         #df_to_donate['timestamp'] = pd.to_datetime(df_to_donate['time_datetime'], unit='s').dt.time
        
 
         # Select and reorder columns
         #out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
-        out = df_to_donate[['time', 'command', 'response']]
+        out = df_to_donate[['time', 'Uw commando', 'Reactie van de assistent']]
     except Exception as e:
         print(e)
     finally:

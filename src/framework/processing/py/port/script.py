@@ -186,9 +186,9 @@ def extract_google_home(zipfile: str, validation: validate.ValidateInput) -> lis
 
     df = google_home.extract_googlehome_data_to_df(zipfile)
     if not df.empty:
-        table_title = props.Translatable({"en": "Google Home", "nl": "Google Home"})
+        table_title = props.Translatable({"en": "Your Google Assistant Data", "nl": "Uw Google Assistant Data"})
         vis = [
-            create_wordcloud("command", "command", "command")
+            create_wordcloud("Commando", "Commando", "Commando", tokenize=True), 
         ]
         table =  props.PropsUIPromptConsentFormTable("google_home_unique_key_here", table_title, df, visualizations=vis) 
         tables_to_render.append(table)
