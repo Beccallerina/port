@@ -148,9 +148,17 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
 
         # Remove last word in entries of the Commando column (ger: gesagt, en: said, nl: gezegd)
         df_to_donate['Uw commando'] = df_to_donate['Uw commando'].str.rsplit(' ', 1).str[0]
+        # For NL this means also removing 'Je hebt' in combination with 'gezegd'
+        df_to_donate['Uw commando'] = df_to_donate['Uw commando'].str.replace('Je hebt', '')
 
-        # Convert time column THIS IS THE PROBLEMATIC CODE
 
+        # Dropping miliseconds and adjusting format of day and time
+        df_to_donate['Dag en tijd'] = df_to_donate['time'].str.replace(r"\.\d+", "")
+        # Replace 'T' with ',' and remove 'Z'
+        df_to_donate['Dag en tijd'] = df_to_donate['Dag en tijd'].str.replace('T', ', ').str.replace('Z', '')
+
+
+        # Convert time column >> THIS IS WHERE PART OF THE PROBLEMATIC CODE IS
         # Option 1
         #df_to_donate['Datum'] = pd.to_datetime(df_to_donate['time'], unit='s') --> this does not work
         
@@ -163,8 +171,7 @@ def clean_extracted_data(df: pd.DataFrame) -> pd.DataFrame:
        
 
         # Select and reorder columns
-        #out = df_to_donate[['time_datetime', 'date', 'timestamp', 'command', 'response']]
-        out = df_to_donate[['time', 'Uw commando', 'Reactie van de assistent']]
+        out = df_to_donate[['Dag en tijd', 'Uw commando', 'Reactie van de assistent']]
     except Exception as e:
         print(e)
     finally:
