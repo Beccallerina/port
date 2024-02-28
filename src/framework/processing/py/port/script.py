@@ -1,8 +1,6 @@
 import logging
 import json
 import io
-from typing import Optional, Literal
-
 
 import pandas as pd
 
@@ -42,8 +40,7 @@ def process(session_id):
     # 1. Prompt file extraction loop
     # 2. In case of succes render data on screen
     for platform in platforms:
-        #platform_name, extraction_fun, validation_fun = platform
-        platform_name, extraction_fun, _ = platform
+        platform_name, extraction_fun, validation_fun = platform
 
         table_list = None
         progress += step_percentage
@@ -58,29 +55,28 @@ def process(session_id):
             file_result = yield render_donation_page(platform_name, promptFile, progress)
 
             if file_result.__type__ == "PayloadString":
-                #validation = validation_fun(file_result.value)
+                validation = validation_fun(file_result.value)
 
                 # DDP is recognized: Status code zero
-                #if validation.status_code.id == 0: 
-                LOGGER.info("Payload for %s", platform_name)
-                yield donate_logs(f"{session_id}-tracking")
+                if validation.status_code.id == 0: 
+                    LOGGER.info("Payload for %s", platform_name)
+                    yield donate_logs(f"{session_id}-tracking")
 
-                #table_list = extraction_fun(file_result.value, validation)
-                table_list = extraction_fun(file_result.value, _)
-                break
+                    table_list = extraction_fun(file_result.value, validation)
+                    break
 
                 # DDP is not recognized: Different status code
-                #if validation.status_code.id != 0: 
-                #    LOGGER.info("Not a valid %s zip; No payload; prompt retry_confirmation", platform_name)
-                #    yield donate_logs(f"{session_id}-tracking")
-                #    retry_result = yield render_donation_page(platform_name, retry_confirmation(platform_name), progress)
+                if validation.status_code.id != 0: 
+                    LOGGER.info("Not a valid %s zip; No payload; prompt retry_confirmation", platform_name)
+                    yield donate_logs(f"{session_id}-tracking")
+                    retry_result = yield render_donation_page(platform_name, retry_confirmation(platform_name), progress)
 
-                #    if retry_result.__type__ == "PayloadTrue":
-                #        continue
-                #    else:
-                #        LOGGER.info("Skipped during retry %s", platform_name)
-                #        yield donate_logs(f"{session_id}-tracking")
-                #        break
+                    if retry_result.__type__ == "PayloadTrue":
+                        continue
+                    else:
+                        LOGGER.info("Skipped during retry %s", platform_name)
+                        yield donate_logs(f"{session_id}-tracking")
+                        break
             else:
                 LOGGER.info("Skipped %s", platform_name)
                 yield donate_logs(f"{session_id}-tracking")
@@ -146,36 +142,6 @@ def create_empty_table(platform_name: str) -> props.PropsUIPromptConsentFormTabl
 
 
 ##################################################################
-# Visualization helpers
-def create_chart(type: Literal["bar", "line", "area"], 
-                 nl_title: str, en_title: str, 
-                 x: str, y: Optional[str] = None, 
-                 x_label: Optional[str] = None, y_label: Optional[str] = None,
-                 date_format: Optional[str] = None, aggregate: str = "count", addZeroes: bool = True):
-    if y is None:
-        y = x
-        if aggregate != "count": 
-            raise ValueError("If y is None, aggregate must be count if y is not specified")
-        
-    return props.PropsUIChartVisualization(
-        title = props.Translatable({"en": en_title, "nl": nl_title}),
-        type = type,
-        group = props.PropsUIChartGroup(column= x, label= x_label, dateFormat= date_format),
-        values = [props.PropsUIChartValue(column= y, label= y_label, aggregate= aggregate, addZeroes= addZeroes)]       
-    )
-
-def create_wordcloud(nl_title: str, en_title: str, column: str, 
-                     tokenize: bool = False, 
-                     value_column: Optional[str] = None):
-    return props.PropsUITextVisualization(title = props.Translatable({"en": en_title, "nl": nl_title}),
-                                          type='wordcloud',
-                                          text_column=column,
-                                          value_column=value_column,
-                                          tokenize=tokenize
-                                          )
-
-
-##################################################################
 # Extraction functions
 
 def extract_google_home(zipfile: str, validation: validate.ValidateInput) -> list[props.PropsUIPromptConsentFormTable]:
@@ -184,17 +150,13 @@ def extract_google_home(zipfile: str, validation: validate.ValidateInput) -> lis
     """
     tables_to_render = []
 
-    df = google_home.extract_googlehome_data_to_df(zipfile)
+    df = google_home.google_home_to_df(zipfile, validation)
     if not df.empty:
         table_title = props.Translatable({"en": "Your Google Assistant Data", "nl": "Uw Google Assistant Data"})
-        vis = [
-            create_wordcloud("Commando", "Commando", "Commando", tokenize=True), 
-        ]
-        table =  props.PropsUIPromptConsentFormTable("google_home_unique_key_here", table_title, df, visualizations=vis) 
+        table =  props.PropsUIPromptConsentFormTable("google_home_unique_key_here", table_title, df)
         tables_to_render.append(table)
 
     return tables_to_render
-
 
 
 
